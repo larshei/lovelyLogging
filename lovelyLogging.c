@@ -15,7 +15,7 @@
 // +++ Import fifo/ring buffer ++++++++++++++++++++++++++++++++++++++++++++++++
 #define LQC_BUFFER_SIZE LLOG_BUFFER_ELEMENT_COUNT
 #define LQC_BUFFER_DATA_TYPE llog_entry_t
-LQC_BUFFER_DATA_TYPE log_entries[LQC_BUFFER_SIZE];
+static LQC_BUFFER_DATA_TYPE log_entries[LQC_BUFFER_SIZE];
 #define LQC_BUFFER_MEMORY log_entries
 #define LQC_BUFFER_OVERWRITE_WHEN_FULL LQC_BUFFER_OVERWRITE_OLDEST
 
@@ -75,7 +75,7 @@ void llog_reset_buffer() {
     lqc_buffer_reset();
 }
 
-int llog_create_string_from_entry(char* buffer, int max_length, llog_entry_t entry) {
+int llog_create_string_from_entry(char* buffer, unsigned int max_length, llog_entry_t entry) {
     char* cursor = buffer;
     char* log_level_string;
 
