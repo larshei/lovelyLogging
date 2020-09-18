@@ -42,6 +42,6 @@ int llog_is_empty();
 int llog_add_entry(llog_severity_t severity, char* file, int line, char* msg);
 int llog_next_entry_as_string( char* buffer, int max_length);
 llog_entry_t llog_next_entry();
-int llog_create_string_from_entry(char* buffer, unsigned int max_length, llog_entry_t entry);
+unsigned int llog_create_string_from_entry(char* buffer, unsigned int max_length, llog_entry_t entry);
 
 #endif /* LOGGING_LOVELYLOGGING_H_ */

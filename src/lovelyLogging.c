@@ -62,7 +62,7 @@ int llog_next_entry_as_string( char* buffer, int max_length ) {
         entry = lqc_buffer_read_element();
         length = llog_create_string_from_entry(buffer, max_length, entry);
     }
-    *(buffer + max_length) = '\0'; // \0 terminate in any case
+    *(buffer + max_length - 1) = '\0'; // \0 terminate in any case
     return length;
 }
 
@@ -79,33 +79,43 @@ void llog_reset_buffer() {
     log_entry_number = 1;
 }
 
-int llog_create_string_from_entry(char* buffer, unsigned int max_length, llog_entry_t entry) {
+unsigned int llog_create_string_from_entry(char* buffer, unsigned int max_length, llog_entry_t entry) {
     char* cursor = buffer;
     char* log_level_string;
+    int remaining_length, write_result;
 
     int valid_severity = (entry.severity < LOG_LEVEL_COUNT) && (entry.severity >= 0);
-    log_level_string = valid_severity ? log_level_strings[entry.severity] : "";
-    
-    cursor += snprintf( cursor,
-                        max_length - (cursor - buffer), 
-                        log_number_string,
-                        entry.number
-                      );
-    cursor += snprintf( cursor,
-                        max_length - (cursor - buffer),
-                        log_level_string
-                      );
-    cursor += snprintf( cursor,
-                        max_length - (cursor - buffer), 
-                        log_file_line_string,
-                        entry.file,
-                        entry.line
-                      );
-    cursor += snprintf( cursor,
-                        max_length - (cursor - buffer), 
-                        log_message_string,
-                        entry.message
-                      );
+    if (valid_severity) {
+        log_level_string = log_level_strings[entry.severity];
+    } else {
+        log_level_string = "";
+        return 0;
+    }
+
+    // snprintf returns either the number of written bytes
+    // or the number of bytes it WOULD HAVE NEEDED to write everything,
+    // meaning its return value is bigger than the given max count.
+    // so we need to check the return value after every write.
+    // Alternative:
+    // Passing 4 variables + va_list to a function and using the return value
+    // to indicate if the buffer end has been reached.
+    #define write_to_buffer(string, ...)                  \
+    remaining_length = max_length - (cursor - buffer);  \
+    write_result = snprintf( cursor,                    \
+                        remaining_length,               \
+                        string,                         \
+                        __VA_ARGS__                     \
+                      );                                \
+    if (write_result >= remaining_length) {             \
+        return max_length;                              \
+    } else {                                            \
+        cursor += write_result;                         \
+    }                                                   \
+
+    write_to_buffer(log_number_string, entry.number);
+    write_to_buffer(log_level_string, 0); // dummy 0, __VA_ARGS__ cant be empty
+    write_to_buffer(log_file_line_string, entry.file, entry.line);
+    write_to_buffer(log_message_string, entry.message);
 
     return (cursor - buffer);
 }
