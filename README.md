@@ -49,5 +49,5 @@ Getting an entry as a string will return
 
 Console output of the formated string will look similar to:
 
- <span style="color:green">INFO:</span><span
+ <span style="color:green">   1 - INFO:</span><span
  style="color:grey">(path_to/my_file.c:24)</span> This is an info message
