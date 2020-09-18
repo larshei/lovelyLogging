@@ -30,6 +30,7 @@ LOG_LEVELS(
 typedef struct {
     llog_severity_t severity;
     int line;
+    int number;
     char* file;
     char* message;
 } llog_entry_t;

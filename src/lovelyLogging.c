@@ -28,6 +28,7 @@ static LQC_BUFFER_DATA_TYPE log_entries[LQC_BUFFER_SIZE];
 // a message for log level `serverity` will be a concatenation of
 // log_level_strings[severity] + log_file_line_string + log_message_string
 // \x1b[__: escape characters. ..31 red, 32 green, 33 yellow, 34 blue, 0m reset
+const char* log_number_string = "%4u - ";
 const char* log_level_strings[LOG_LEVEL_COUNT] = {
     "\x1b[31;1mCRITICAL:",
     "\x1b[31;1mERROR:",
@@ -37,6 +38,7 @@ const char* log_level_strings[LOG_LEVEL_COUNT] = {
 };
 const char* log_file_line_string = "\x1b[30;1m(%s:%u)";
 const char* log_message_string = "\x1b[0m %s\n\r";
+static int log_entry_number = 1;
 
 
 int llog_add_entry(llog_severity_t severity, char* file, int line, char* msg) {
@@ -44,6 +46,7 @@ int llog_add_entry(llog_severity_t severity, char* file, int line, char* msg) {
         return 0;
     }
     llog_entry_t entry;
+    entry.number = log_entry_number++;
     entry.severity = severity;
     entry.file = file;
     entry.line = line;
@@ -73,6 +76,7 @@ int llog_is_empty() {
 
 void llog_reset_buffer() {
     lqc_buffer_reset();
+    log_entry_number = 1;
 }
 
 int llog_create_string_from_entry(char* buffer, unsigned int max_length, llog_entry_t entry) {
@@ -84,6 +88,11 @@ int llog_create_string_from_entry(char* buffer, unsigned int max_length, llog_en
     
     cursor += snprintf( cursor,
                         max_length - (cursor - buffer), 
+                        log_number_string,
+                        entry.number
+                      );
+    cursor += snprintf( cursor,
+                        max_length - (cursor - buffer),
                         log_level_string
                       );
     cursor += snprintf( cursor,
