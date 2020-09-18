@@ -37,9 +37,10 @@ typedef struct {
 #define llog_new(severity, msg) llog_add_entry(severity, __FILE__, __LINE__, msg)
 
 void llog_reset_buffer();
-int llog_create_string_from_entry(char* buffer, int max_length, llog_entry_t entry);
+int llog_is_empty();
 int llog_add_entry(llog_severity_t severity, char* file, int line, char* msg);
 int llog_next_entry_as_string( char* buffer, int max_length);
 llog_entry_t llog_next_entry();
+int llog_create_string_from_entry(char* buffer, int max_length, llog_entry_t entry);
 
 #endif /* LOGGING_LOVELYLOGGING_H_ */

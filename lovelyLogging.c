@@ -67,6 +67,10 @@ llog_entry_t llog_next_entry() {
     return lqc_buffer_read_element();
 }
 
+int llog_is_empty() {
+    return lqc_buffer_is_empty();
+}
+
 void llog_reset_buffer() {
     lqc_buffer_reset();
 }
