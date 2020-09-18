@@ -1,5 +1,7 @@
 # lovelyLogging
 
+![Unit Tests](https://github.com/larshei/lovelyLogging/workflows/Unit%20Tests/badge.svg)
+
 Simple Logging abstraction for C.
 
 - One file include, almost no setup
