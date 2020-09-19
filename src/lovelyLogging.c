@@ -65,6 +65,9 @@ int llog_add_entry(llog_severity_t severity, char* file, int line, char* msg) {
 }
 
 int llog_next_entry_as_string( char* buffer, int max_length ) {
+    int null_exception = (buffer == NULL);
+    if (null_exception) return 0;
+
     int length = 0;
     llog_entry_t entry;
 
@@ -91,15 +94,11 @@ void llog_reset_buffer() {
 
 // returns number of bytes written
 int append_to_string(string_build_info_t* sb, char* format_string, ...) {
+    int null_exception = (format_string == NULL);
+    if (null_exception) return 0;
+
     int cursor_out_of_bounds = (sb->cursor >= sb->end) || (sb->cursor < sb->begin);
-    int null_exception = (sb->cursor == NULL)
-                      || (sb->begin == NULL)
-                      || (sb->end == NULL)
-                      || (format_string == NULL);
-                      
-    if(cursor_out_of_bounds || null_exception) {
-        return 0;
-    }
+    if(cursor_out_of_bounds) return 0;
 
     va_list vargs;
     va_start(vargs, format_string);
@@ -123,9 +122,8 @@ int append_to_string(string_build_info_t* sb, char* format_string, ...) {
 
 unsigned int llog_create_string_from_entry(char* buffer, unsigned int max_length, llog_entry_t entry) {
     int invalid_severity = entry.severity >= LOG_LEVEL_COUNT;
-    if (invalid_severity) {
-        return 0;
-    }
+    int null_exception = (buffer == NULL);
+    if (invalid_severity || null_exception) return 0;
 
     string_build_info_t sb = {
         .begin = buffer,

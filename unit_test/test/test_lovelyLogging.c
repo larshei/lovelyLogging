@@ -83,3 +83,16 @@ void test_read_from_empty() {
     llog_next_entry_as_string(test.string_buffer, MAX_STRING_LEN);
     TEST_ASSERT_EQUAL_STRING("", test.string_buffer);
 }
+
+void test_null_buffer_make_string_from_entry() {
+    llog_add_entry(severity, filename, line, "message1");
+    llog_entry_t entry = llog_next_entry();
+    int bytes_written = llog_create_string_from_entry(NULL, MAX_STRING_LEN, entry);
+TEST_ASSERT_EQUAL(0, bytes_written);
+}
+
+void test_null_buffer_get_next_as_string() {
+    llog_add_entry(severity, filename, line, "message1");
+    int bytes_written = llog_next_entry_as_string(NULL, MAX_STRING_LEN);
+    TEST_ASSERT_EQUAL(0, bytes_written);
+}
