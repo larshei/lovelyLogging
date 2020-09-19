@@ -20,6 +20,7 @@ static LQC_BUFFER_DATA_TYPE log_entries[LQC_BUFFER_SIZE];
 #define LQC_BUFFER_OVERWRITE_WHEN_FULL LQC_BUFFER_OVERWRITE_OLDEST
 
 #include "lqc_buffer.c"
+#include "stdarg.h"
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #include <stdio.h>
@@ -40,6 +41,16 @@ const char* log_file_line_string = "\x1b[30;1m(%s:%u)";
 const char* log_message_string = "\x1b[0m %s\n\r";
 static int log_entry_number = 1;
 
+// ----------------------------------------------------------------------------
+
+typedef struct {
+    char* begin;
+    char* cursor;
+    char* end;
+} string_build_info_t;
+
+
+// ----------------------------------------------------------------------------
 
 int llog_add_entry(llog_severity_t severity, char* file, int line, char* msg) {
     if (severity > LLOG_VERBOSITY) {
@@ -79,43 +90,48 @@ void llog_reset_buffer() {
     log_entry_number = 1;
 }
 
-unsigned int llog_create_string_from_entry(char* buffer, unsigned int max_length, llog_entry_t entry) {
-    char* cursor = buffer;
-    char* log_level_string;
-    int remaining_length, write_result;
-
-    int valid_severity = (entry.severity < LOG_LEVEL_COUNT) && (entry.severity >= 0);
-    if (valid_severity) {
-        log_level_string = log_level_strings[entry.severity];
-    } else {
-        log_level_string = "";
+// returns number of bytes written
+int append_to_string(string_build_info_t* sb, char* format_string, ...) {
+    int cursor_out_of_bounds = (sb->cursor >= sb->end) || (sb->cursor < sb->begin);
+    if(cursor_out_of_bounds) {
         return 0;
     }
 
-    // snprintf returns either the number of written bytes
-    // or the number of bytes it WOULD HAVE NEEDED to write everything,
-    // meaning its return value is bigger than the given max count.
-    // so we need to check the return value after every write.
-    // Alternative:
-    // Passing 4 variables + va_list to a function and using the return value
-    // to indicate if the buffer end has been reached.
-    #define write_to_buffer(string, ...)                  \
-    remaining_length = max_length - (cursor - buffer);  \
-    write_result = snprintf( cursor,                    \
-                        remaining_length,               \
-                        string,                         \
-                        __VA_ARGS__                     \
-                      );                                \
-    if (write_result >= remaining_length) {             \
-        return max_length;                              \
-    } else {                                            \
-        cursor += write_result;                         \
-    }                                                   \
+    va_list vargs;
+    va_start(vargs, format_string);
 
-    write_to_buffer(log_number_string, entry.number);
-    write_to_buffer(log_level_string, 0); // dummy 0, __VA_ARGS__ cant be empty
-    write_to_buffer(log_file_line_string, entry.file, entry.line);
-    write_to_buffer(log_message_string, entry.message);
+    size_t remaining_length = sb->end - sb->cursor;
+    int write_result = vsnprintf( sb->cursor,
+                        remaining_length,
+                        format_string,
+                        vargs
+                      );
+    va_end(vargs);
 
-    return (cursor - buffer);
+    if (write_result >= remaining_length) {
+        sb->cursor = sb->end;
+        return remaining_length;
+    } else {
+        sb->cursor += write_result;
+        return write_result;
+    }
+}
+
+unsigned int llog_create_string_from_entry(char* buffer, unsigned int max_length, llog_entry_t entry) {
+    int invalid_severity = entry.severity >= LOG_LEVEL_COUNT;
+    if (invalid_severity) {
+        return 0;
+    }
+
+    string_build_info_t sb = {
+        .begin = buffer,
+        .cursor = buffer,
+        .end = buffer + max_length,
+    };
+    append_to_string(&sb,log_number_string, entry.number);
+    append_to_string(&sb,log_level_strings[entry.severity]);
+    append_to_string(&sb,log_file_line_string, entry.file, entry.line);
+    append_to_string(&sb,log_message_string, entry.message);
+
+    return (sb.cursor - sb.begin);
 }
