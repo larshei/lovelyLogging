@@ -41,7 +41,7 @@ if (0 == llog_is_empty()) {
 #define BUFFER_LEN 100
 char printout_buffer[BUFFER_LEN];
 
-llog_get_next_entry_as_string(printout_buffer, BUFFER_LEN);
+llog_next_entry_as_string(printout_buffer, BUFFER_LEN);
 ```
 Getting an entry as a string will return
 1. a preformated string, `\n\r\0` terminated.
