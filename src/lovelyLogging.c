@@ -79,7 +79,7 @@ int llog_next_entry_as_string( char* buffer, int max_length ) {
     return length;
 }
 
-llog_entry_t llog_next_entry() {
+llog_entry_t llog_next_entry_raw() {
     return lqc_buffer_read_element();
 }
 

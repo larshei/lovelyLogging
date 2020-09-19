@@ -37,14 +37,14 @@ void test_one_entry_log_is_not_empty(void) {
 
 void test_log_entry_after_add_and_read(void) {
     llog_add_entry(severity, filename, line, message);
-    llog_next_entry();
+    llog_next_entry_raw();
     TEST_ASSERT_TRUE(llog_is_empty());
 }
 
 
 void test_add_retrieve_entry_raw(void) {
     llog_add_entry(severity, filename, line, message);
-    llog_entry_t entry = llog_next_entry();
+    llog_entry_t entry = llog_next_entry_raw();
 
     TEST_ASSERT_EQUAL(severity, entry.severity);
     TEST_ASSERT_EQUAL(line, entry.line);
@@ -86,7 +86,7 @@ void test_read_from_empty() {
 
 void test_null_buffer_make_string_from_entry() {
     llog_add_entry(severity, filename, line, "message1");
-    llog_entry_t entry = llog_next_entry();
+    llog_entry_t entry = llog_next_entry_raw();
     int bytes_written = llog_create_string_from_entry(NULL, MAX_STRING_LEN, entry);
 TEST_ASSERT_EQUAL(0, bytes_written);
 }
