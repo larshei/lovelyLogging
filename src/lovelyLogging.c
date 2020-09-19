@@ -49,7 +49,6 @@ typedef struct {
     char* end;
 } string_build_info_t;
 
-
 // ----------------------------------------------------------------------------
 
 int llog_add_entry(llog_severity_t severity, char* file, int line, char* msg) {
@@ -93,7 +92,12 @@ void llog_reset_buffer() {
 // returns number of bytes written
 int append_to_string(string_build_info_t* sb, char* format_string, ...) {
     int cursor_out_of_bounds = (sb->cursor >= sb->end) || (sb->cursor < sb->begin);
-    if(cursor_out_of_bounds) {
+    int null_exception = (sb->cursor == NULL)
+                      || (sb->begin == NULL)
+                      || (sb->end == NULL)
+                      || (format_string == NULL);
+                      
+    if(cursor_out_of_bounds || null_exception) {
         return 0;
     }
 
