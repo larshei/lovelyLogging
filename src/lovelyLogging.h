@@ -32,7 +32,11 @@ typedef struct {
     int line;
     int number;
     char* file;
-    char* message;
+    #if !LLOG_MSG_COPY_ENABLE
+      char* message;
+    #else
+      char message[LLOG_CHAR_BUF_SIZE];
+    #endif
 } llog_entry_t;
 
 #define llog_new(severity, msg) llog_add_entry(severity, __FILE__, __LINE__, msg)

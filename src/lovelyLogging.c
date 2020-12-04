@@ -21,6 +21,7 @@ static LQC_BUFFER_DATA_TYPE log_entries[LQC_BUFFER_SIZE];
 
 #include "lqc_buffer.c"
 #include "stdarg.h"
+#include "string.h"
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #include <stdio.h>
@@ -60,7 +61,13 @@ int llog_add_entry(llog_severity_t severity, char* file, int line, char* msg) {
     entry.severity = severity;
     entry.file = file;
     entry.line = line;
-    entry.message = msg;
+    #if !LLOG_MSG_COPY_ENABLE
+      entry.message = msg;
+    #else
+      size_t length = strlen(msg);
+      length = (length > LLOG_CHAR_BUF_SIZE) ? LLOG_CHAR_BUF_SIZE : length;
+      memcpy(entry.message, msg, length);
+    #endif
     return lqc_buffer_add_element(entry);
 }
 
@@ -133,7 +140,10 @@ unsigned int llog_create_string_from_entry(char* buffer, unsigned int max_length
     append_to_string(&sb,log_number_string, entry.number);
     append_to_string(&sb,log_level_strings[entry.severity]);
     append_to_string(&sb,log_file_line_string, entry.file, entry.line);
+    #if !LLOG_MSG_COPY_ENABLE
     append_to_string(&sb,log_message_string, entry.message);
-
+    #else
+    append_to_string(&sb,log_message_string, &entry.message);
+    #endif
     return (sb.cursor - sb.begin);
 }

@@ -51,3 +51,15 @@ Console output of the formated string will look similar to:
 
  <span style="color:green">   1 - INFO:</span><span
  style="color:grey">(path_to/my_file.c:24)</span> This is an info message
+
+### Logging local strings
+
+When trying to log local strings, the log messages might appear empty. This is
+because lovelyLogging stores only a pointer to the message by default. The
+original message created locally in the calling function is probably not
+available anymore.
+
+In this case, lovelyLogging allows to copy over messages to its own buffer to
+make sure they do not get lost, at the cost of additional
+`LLOG_BUFFER_ELEMENT_COUNT * (LLOG_CHAR_BUF_SIZE - 1)` bytes of memory. The
+behaviour is controlled using the `LLOG_MSG_COPY_ENABLE` define.
